@@ -33,7 +33,7 @@ class SevenSegHex(Elaboratable):
 
         # Signals
         self.val = Signal(4)
-        self.oe = Signal()
+        self.oe = Signal(reset=1)
 
         self.ports = [
             self.val,

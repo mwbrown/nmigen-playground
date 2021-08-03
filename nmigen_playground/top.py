@@ -8,6 +8,7 @@ __all__ = ['DE2_115Top']
 class DE2_115Top(Elaboratable):
 
     NUM_SWITCHES = 18
+    NUM_7SEG = 8
 
     def __init__(self):
         pass
@@ -20,14 +21,20 @@ class DE2_115Top(Elaboratable):
         sws  = [platform.request('switch', i) for i in range(self.NUM_SWITCHES)]
         led_r = platform.request('led_r')
         led_g = platform.request('led_g')
-        seg0 = platform.request('display_7seg', 0)
 
-        seg0_hex = SevenSegHex(seg0)
-        m.submodules += seg0_hex
+        segs_hex = [SevenSegHex(platform.request('display_7seg', i)) for i in range(self.NUM_7SEG)]
+        m.submodules += segs_hex
 
+        # Default unused displays are off
+        m.d.comb += [segs_hex[i].oe.eq(0) for i in range(self.NUM_7SEG)]
+
+        # Assign the first eight switches to the 7seg displays
         m.d.comb += [
-            seg0_hex.val.eq(Cat(sws[0], sws[1], sws[2], sws[3])),
-            seg0_hex.oe.eq(sws[4]),
+            segs_hex[0].val.eq(Cat(sws[0:0+4])),
+            segs_hex[1].val.eq(Cat(sws[4:4+4])),
+
+            segs_hex[0].oe.eq(1),
+            segs_hex[1].oe.eq(1),
         ]
 
         return m
