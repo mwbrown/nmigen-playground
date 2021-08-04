@@ -43,16 +43,15 @@ class SevenSegHex(Elaboratable):
     def elaborate(self, platform):
         m = Module()
 
-        mem = Memory(width=7, depth=16, init=HEX_VALS, name='Hex7Seg')
-        mem_rd = mem.read_port(domain="comb")
-        m.submodules += mem_rd
+        mem = Memory(width=7, depth=16, init=HEX_VALS, name='Hex7Seg').read_port(domain='comb')
+        m.submodules += mem
 
         segs = Cat(self.disp.g, self.disp.f, self.disp.e, self.disp.d, self.disp.c, self.disp.b, self.disp.a)
 
-        m.d.comb += mem_rd.addr.eq(self.val)
+        m.d.comb += mem.addr.eq(self.val)
 
         with m.If(self.oe):
-            m.d.comb += segs.eq(mem_rd.data)
+            m.d.comb += segs.eq(mem.data)
         with m.Else():
             m.d.comb += segs.eq(0)
 
