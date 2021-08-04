@@ -2,6 +2,7 @@
 from nmigen import *
 from .boards.de2_115 import DE2_115Platform
 from .display.seven_seg import *
+from .extensions.mips_ejtag import *
 
 __all__ = ['DE2_115Top']
 
@@ -21,6 +22,8 @@ class DE2_115Top(Elaboratable):
         sws  = [platform.request('switch', i) for i in range(self.NUM_SWITCHES)]
         led_r = platform.request('led_r')
         led_g = platform.request('led_g')
+
+        ejtag = platform.request('mips_ejtag')
 
         segs_hex = [SevenSegHex(platform.request('display_7seg', i)) for i in range(self.NUM_7SEG)]
         m.submodules += segs_hex
@@ -42,5 +45,6 @@ class DE2_115Top(Elaboratable):
 if __name__ == '__main__':
     module = DE2_115Top()
     plat = DE2_115Platform()
+    plat.add_resources([MIPS_EJTAGResource()])
 
     plat.build(module, do_program=True)
