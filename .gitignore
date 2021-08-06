@@ -1,4 +1,8 @@
+# Build, simulation, and python outputs.
 build/
+*.vcd
 *.pyc
+
+# Sublime Text
 *.sublime-project
 *.sublime-workspace
