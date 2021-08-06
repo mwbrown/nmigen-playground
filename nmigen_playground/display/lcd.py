@@ -26,10 +26,27 @@ class LcdDelayDecoder(Elaboratable):
 
     def elaborate(self, platform):
 
+        CLK_FACTOR = 50 # How many clocks per usec (FIXME)
+
+        # Datasheet values plus a small fudge factor
+        RESET_DELAY   = 1600 * CLK_FACTOR # Clear Display / Return Home (RS=0)
+        COMMAND_DELAY =   50 * CLK_FACTOR # All other commands          (RS=0)
+        CHAR_DELAY    =   50 * CLK_FACTOR # Character writes            (RS=1)
+
         m = Module()
 
-        # TODO: decode different delays depending on datasheet values
+        # In case nothing gets handled, use a 5 millisecond delay.
         m.d.comb += self.delay_clks.eq(MAX_DELAY)
+
+        with m.If(self.rs):
+            # Data
+            m.d.comb += self.delay_clks.eq(CHAR_DELAY)
+        with m.Elif(self.data[2:7] == 0):
+            # Reset / Home commands.
+            m.d.comb += self.delay_clks.eq(RESET_DELAY)
+        with m.Else():
+            # Other commands.
+            m.d.comb += self.delay_clks.eq(COMMAND_DELAY)
 
         return m
 
@@ -215,7 +232,7 @@ if __name__ == '__main__':
     from nmigen.sim import *
 
     # Override the MAX_DELAY to something more reasonable...
-    MAX_DELAY = 100
+    MAX_DELAY = 2000*50
 
     dut = LcdHD44780()
 
@@ -226,6 +243,18 @@ if __name__ == '__main__':
 
         for _ in range(MAX_CYCLES):
             yield
+
+            # Check if init has finished.
+            init = yield dut.init
+            if not init:
+                print('LCD init finished.')
+                # Spin for a number of clocks.
+                for _ in range(100):
+                    yield
+
+                return
+
+        print('LCD init timed out.')
 
     sim = Simulator(dut)
     sim.add_clock(1/50.E6) # Add 50 MHz clock.
