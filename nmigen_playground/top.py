@@ -2,13 +2,13 @@
 from nmigen import *
 from .boards.de2_115 import DE2_115Platform
 from .display import *
-from .extensions.mips_ejtag import *
 
 __all__ = ['DE2_115Top']
 
 class DE2_115Top(Elaboratable):
 
-    NUM_SWITCHES = 18
+    NUM_SW_LEDR = 18 # Number of 'switch' and 'led_r' resources
+    NUM_LEDG = 9
     NUM_7SEG = 8
 
     def __init__(self):
@@ -19,9 +19,9 @@ class DE2_115Top(Elaboratable):
 
         # Request switches and red LEDs
 
-        sws  = [platform.request('switch', i) for i in range(self.NUM_SWITCHES)]
-        led_r = platform.request('led_r')
-        led_g = platform.request('led_g')
+        sws   = [platform.request('switch', i) for i in range(self.NUM_SW_LEDR)]
+        led_r = [platform.request('led_r', i) for i in range(self.NUM_SW_LEDR)]
+        led_g = [platform.request('led_g', i) for i in range(self.NUM_LEDG)]
 
         ejtag = platform.request('mips_ejtag')
 
@@ -72,6 +72,6 @@ class DE2_115Top(Elaboratable):
 if __name__ == '__main__':
     module = DE2_115Top()
     plat = DE2_115Platform()
-    plat.add_resources([MIPS_EJTAGResource()])
+    plat.add_resources(plat.mips_ejtag)
 
     plat.build(module, do_program=True)

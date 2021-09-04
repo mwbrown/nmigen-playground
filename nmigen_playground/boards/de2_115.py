@@ -38,12 +38,15 @@ class DE2_115Platform(IntelPlatform):
         # LEDs, Buttons, Switches
         #
 
-        # Alias all of the LEDs
-        *LEDResources(pins="G19 F19 E19 F21 F18 E18 J19 H19 J17 G17 J15 H16 J16 H17 F15 G15 G16 H15 E21 E22 E25 E24 H21 G20 G22 G21 F17",
+        *LEDResources("led_r", pins="G19 F19 E19 F21 F18 E18 J19 H19 J17 G17 J15 H16 J16 H17 F15 G15 G16 H15",
             attrs=Attrs(io_standard="2.5 V")),
 
-        Resource("led_r", 0, Pins("G19 F19 E19 F21 F18 E18 J19 H19 J17 G17 J15 H16 J16 H17 F15 G15 G16 H15", dir="o"), Attrs(io_standard="2.5 V")),
-        Resource("led_g", 0, Pins("E21 E22 E25 E24 H21 G20 G22 G21 F17", dir="o"), Attrs(io_standard="2.5 V")),
+        *LEDResources("led_g", pins="E21 E22 E25 E24 H21 G20 G22 G21 F17",
+            attrs=Attrs(io_standard="2.5 V")),
+
+        # Alias all of the LEDs for the blinky demo.
+        *LEDResources(pins="G19 F19 E19 F21 F18 E18 J19 H19 J17 G17 J15 H16 J16 H17 F15 G15 G16 H15 E21 E22 E25 E24 H21 G20 G22 G21 F17",
+            attrs=Attrs(io_standard="2.5 V")),
 
         *ButtonResources(
             pins="M23 M21 N21 R24", invert=True,
@@ -554,6 +557,36 @@ class DE2_115Platform(IntelPlatform):
             "HSMC_D2":          "AE27",
             "HSMC_D3":          "AF27",
         }),
+    ]
+
+    # Can optionally be added by add_resources.
+    #
+    # On the DE2-115, JP4 is a 14-pin connector used with a particular
+    # JTAG pinout, noted by Terasic to be for MIPS:
+    #
+    #    1    2
+    # TRST  GND
+    #  TDI  GND
+    #  TDO  GND
+    #  TMS  GND
+    #  TCK  GND
+    #  RST  GND/KEY
+    # DINT  VRef
+    #   13   14
+    #
+    # On actual connectors, pin 12 is supposed to be a key pin.
+    # On the DE2-115, this is GND.
+    #
+    mips_ejtag = [
+        Resource("mips_ejtag", 0,
+            Subsignal("trst", PinsN( "1", dir="i", conn=("ex_io", 0))),
+            Subsignal("tdi",  Pins(  "3", dir="i", conn=("ex_io", 0))),
+            Subsignal("tdo",  Pins(  "5", dir="o", conn=("ex_io", 0))),
+            Subsignal("tms",  Pins(  "7", dir="i", conn=("ex_io", 0))),
+            Subsignal("tck",  Pins(  "9", dir="i", conn=("ex_io", 0))),
+            Subsignal("rst",  PinsN("11", dir="i", conn=("ex_io", 0))),
+            Subsignal("dint", Pins( "13", dir="i", conn=("ex_io", 0))),
+            Attrs(io_standard="3.3-V LVTTL"))
     ]
 
     def toolchain_program(self, products, name):
