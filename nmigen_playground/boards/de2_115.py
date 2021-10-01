@@ -109,17 +109,21 @@ class DE2_115Platform(IntelPlatform):
         # RS232
         #
 
+        # This is an actual RS-232 port with a DCE (female) DB9 socket on the board.
+        # Thus, RTS is an input and CTS is an output in this case.
         UARTResource(0,
-            rx="G12", tx="G9", rts="G14", cts="J13", role="dte",
+            rx="G12", tx="G9", rts="J13", cts="G14", role="dce",
             attrs=Attrs(io_standard="3.3-V LVTTL")),
 
         #
-        # PS/2
+        # Dual PS/2 port
         #
 
+        # Labeled on schematic as "KB" PS/2
         PS2Resource(0, clk="G6", dat="H5",
             attrs=Attrs(io_standard="3.3-V LVTTL")),
 
+        # Labeled on schematic as "MS" PS/2
         PS2Resource(1, clk="G5", dat="F5",
             attrs=Attrs(io_standard="3.3-V LVTTL")),
 
@@ -141,7 +145,7 @@ class DE2_115Platform(IntelPlatform):
             Subsignal("b", Pins("B10 A10 C11 B11 A11 C12 D11 D12", dir="o")),   # Goes to DAC chip
             Subsignal("blank", PinsN("F11", dir="o")),                          # Goes to DAC chip
             Subsignal("clk", Pins("A12", dir="o")),                             # Goes to DAC chip
-            Subsignal("sync", PinsN("C10", dir="o")),                          # Goes to DAC chip
+            Subsignal("sync", PinsN("C10", dir="o")),                           # Goes to DAC chip
             Subsignal("hs", Pins("G13", dir="o")),                              # Direct D-Sub connection
             Subsignal("vs", Pins("C13", dir="o")),                              # Direct D-Sub connection
             Attrs(io_standard="3.3-V LVTTL")),
